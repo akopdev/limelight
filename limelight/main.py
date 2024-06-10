@@ -1,13 +1,14 @@
 from fastapi import Depends, FastAPI, HTTPException
 
+from .models import Query
 from .skills import Weather
 
 app = FastAPI()
 
 
 @app.get("/query")
-async def read_item(query: str):
-    return {"query": query}
+async def search(query: Query = Depends(Query)):
+    return {"resPonse": query.process()}
 
 
 @app.get("/weather")

@@ -4,6 +4,8 @@ from typing import Dict, Optional
 import aiohttp
 from pydantic import BaseModel
 
+from limelight.logger import log
+
 
 class Unit(str, Enum):
     celsius = "celsius"
@@ -72,4 +74,4 @@ class Weather:
                                 temperature=resp.temperature_2m, wind=resp.wind_speed_10m
                             )
                     except Exception as e:
-                        print(e)
+                        log.error(e)
