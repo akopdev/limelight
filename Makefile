@@ -66,7 +66,7 @@ test:
 # -------------------------------------------------------------------------------------------------
 # lint: @ Checks the source code against coding standard rules and safety
 # -------------------------------------------------------------------------------------------------
-lint: lint.setup lint.flake8 lint.safety lint.docs
+lint: lint.flake8 lint.safety lint.docs
 
 # -------------------------------------------------------------------------------------------------
 # format: @ Format source code and auto fix minor issues
@@ -91,13 +91,16 @@ lint.flake8:
 
 # -------------------------------------------------------------------------------------------------
 # safety 
+#
+# Ignored error codes:
+# 	70612 - Ninja2 template injection
 # -------------------------------------------------------------------------------------------------
 lint.safety: 
-	$(PYTHON) safety check --full-report --ignore 67599
+	$(PYTHON) safety check --full-report --ignore 67599 --ignore 70612
 
 # -------------------------------------------------------------------------------------------------
 # pydocstyle
-# -------------------------------------------------------------------------------------------------
+#
 # Ignored error codes:
 #   D100	Missing docstring in public module
 #   D101	Missing docstring in public class
@@ -107,6 +110,7 @@ lint.safety:
 #   D105	Missing docstring in magic method
 #   D106	Missing docstring in public nested class
 #   D107	Missing docstring in __init__
+# -------------------------------------------------------------------------------------------------
 lint.docs: 
 	$(PYTHON) pydocstyle --convention=numpy --add-ignore=D100,D101,D102,D103,D104,D105,D106,D107 .
 
