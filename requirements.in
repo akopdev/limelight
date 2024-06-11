@@ -1,5 +1,5 @@
-transformers
 fastapi
 uvicorn
 torch
-accelerate
+ollama
+chromadb
