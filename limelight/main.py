@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI, HTTPException
 
 from .skills import Weather
-from .storage import collection
+from .models import Query
 from .query import process_query
 
 app = FastAPI()
@@ -12,15 +12,50 @@ async def search(q: str):
 
     query = await process_query(q)
 
+    # q = Query(keywords=",".join(query.keywords), text=query.query)
+    #
+    # q.save()
+    #
+    # result = Query.search("lama")
+    #
+    # return result
+
+
     weather_related_keywords = [
+        "snow",
+        "snowfall",
+        "rain",
+        "raining",
+        "rainfall",
+        "showers",
+        "wind",
+        "windy",
+        "temperature",
+        "heatwave",
+        "cold",
         "weather",
         "forecast",
-        "temperature",
+        "climate",
         "humidity",
-        "wind",
-        "raining",
-        "snow",
+        "uv index",
         "storm",
+        "hurricane",
+        "tornado",
+        "barometric pressure",
+        "outdoor",
+        "sunrise",
+        "sunset",
+        "air quality",
+        "heat",
+        "meteorological",
+        "rainy",
+        "accumulation",
+        "precipitation",
+        "thunderstorm",
+        "fog",
+        "cloudy",
+        "overcast",
+        "sunny",
     ]
 
     # Check if we need to call query
