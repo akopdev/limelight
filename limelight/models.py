@@ -1,5 +1,6 @@
 from typing import List
-from limelight.storage import Collection
+
+from .storage import Collection
 
 
 class Query(Collection):

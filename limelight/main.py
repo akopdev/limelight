@@ -1,25 +1,17 @@
 from fastapi import Depends, FastAPI, HTTPException
 
-from .skills import Weather
 from .models import Query
 from .query import process_query
+from .skills import Weather
 
 app = FastAPI()
 
 
 @app.get("/query")
 async def search(q: str):
-
     query = await process_query(q)
 
-    # q = Query(keywords=",".join(query.keywords), text=query.query)
-    #
-    # q.save()
-    #
-    # result = Query.search("lama")
-    #
-    # return result
-
+    id = Query(keywords=query.keywords, text=query.query).save()
 
     weather_related_keywords = [
         "snow",
@@ -65,12 +57,9 @@ async def search(q: str):
         return result
 
     # Search result candidates in the database
-    results = collection.query(
-        query_texts=[query.query],
-        n_results=10,
-    )
+    results = Query.search(query.query)
 
-    return results.get("documents", [])
+    return results
 
 
 @app.get("/weather")

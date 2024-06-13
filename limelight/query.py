@@ -4,8 +4,8 @@ import numpy as np
 from ollama import AsyncClient
 from pydantic import BaseModel
 
-from limelight.logger import log
-from limelight.settings import settings
+from .logger import log
+from .settings import settings
 
 
 class QueryMetadata(BaseModel):
@@ -33,7 +33,7 @@ async def process_query(text):
         "2. Extract keywords from the query.\n"
         "3. Create a JSON object that includes query and keywords.\n"
         f"Query: '{text}'\n"
-        'Example: \'{"query": "<Query with corrected grammar>","keywords": ["keyword 1", "keyword 2"]}\''
+        'Example: \'{"query": "<Query with corrected grammar>","keywords": ["word 1", "word 2"]}\''
     )
     try:
         result = await AsyncClient().generate(
