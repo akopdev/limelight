@@ -13,3 +13,6 @@ pytest-asyncio
 aioresponses
 pytest-aiohttp
 pytest-mock
+pyarrow 
+pandas
+click
