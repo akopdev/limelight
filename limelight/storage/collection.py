@@ -55,7 +55,7 @@ class Collection:
         return result
 
     def save(self) -> str:
-        self.storage().add(
+        self.storage().upsert(
             ids=[self.id],
             documents=[self.text],
             metadatas=[self._serialize_metadata()],
@@ -78,6 +78,11 @@ class Collection:
 
     @classmethod
     def search(cls, text: str, limit: int = 10) -> List["Collection"]:
+        # return cls.storage().query(
+        #     query_texts=[text],
+        #     n_results=10,
+        #     where_document={"$or": [{"$contains": "preposition"}, {"$contains": "english"}]},
+        # )
         items = cls.storage().query(
             query_texts=[text],
             n_results=limit,
