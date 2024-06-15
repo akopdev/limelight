@@ -77,16 +77,16 @@ class Collection:
             )
 
     @classmethod
-    def search(cls, text: str, limit: int = 10) -> List["Collection"]:
-        # return cls.storage().query(
-        #     query_texts=[text],
-        #     n_results=10,
-        #     where_document={"$or": [{"$contains": "preposition"}, {"$contains": "english"}]},
-        # )
-        items = cls.storage().query(
-            query_texts=[text],
-            n_results=limit,
-        )
+    def search(cls, text: str, filter: List[str], limit: int = 10) -> List["Collection"]:
+        extra = {
+            "n_results": limit,
+        }
+        if filter:
+            if len(filter) == 1:
+                extra["where_document"] = {"$contains": filter[0]}
+            else:
+                extra["where_document"] = {"$or": [{"$contains": f} for f in filter]}
+        items = cls.storage().query(query_texts=[text], **extra)
         return [
             cls(
                 id=items["ids"][0][i],
@@ -95,3 +95,6 @@ class Collection:
             )
             for i, text in enumerate(items["documents"][0])
         ]
+
+    def __str__(self) -> str:
+        return self.text

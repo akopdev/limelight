@@ -1,16 +1,16 @@
 from fastapi import Depends, FastAPI, HTTPException
 
-from .models import Query, Document
+from .models import Document, Query
 from .skills import Weather
+from .utils import combine_response
 
 app = FastAPI()
 
 
-@app.get("/query")
+@app.get("/search")
 async def search(q: str):
     query = Query.parse_text(q)
     # id = query.save()
-
 
     weather_related_keywords = [
         "snow",
@@ -56,9 +56,12 @@ async def search(q: str):
         return result
 
     # Search result candidates in the database
-    results = Document.search(query.text)
+    documents = Document.search(query.text, query.keywords)
 
-    return results
+    return combine_response(documents[:3], query)
+    # Generate a human-readable response
+
+    return documents
 
 
 @app.get("/weather")
