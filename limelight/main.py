@@ -1,10 +1,16 @@
 from fastapi import Depends, FastAPI, HTTPException
+from starlette.responses import FileResponse
 
 from .models import Document, Query
+from .schemas import SearchResultItem, SearchResults
 from .skills import Weather
-from .utils import combine_response
 
 app = FastAPI()
+
+
+@app.get("/")
+async def index():
+    return FileResponse("static/index.html")
 
 
 @app.get("/search")
@@ -50,18 +56,25 @@ async def search(q: str):
     ]
 
     # Check if we need to call query
-    if any(keyword in query.keywords for keyword in weather_related_keywords):
+    if query.keywords and any(keyword in query.keywords for keyword in weather_related_keywords):
         # Call the weather skill with the query
         result = await Weather().forecast()
         return result
 
     # Search result candidates in the database
     documents = Document.search(query.text, query.keywords)
+    # if documents:
+    #     # Generate a human-readable response
+    #     query.summarise(documents[:3])
 
-    return combine_response(documents[:3], query)
-    # Generate a human-readable response
-
-    return documents
+    return SearchResults(
+        id=query.id,
+        query=query.text,
+        results=[
+            SearchResultItem(url=doc.url, title=doc.title, description=doc.text)
+            for doc in documents
+        ],
+    )
 
 
 @app.get("/weather")
