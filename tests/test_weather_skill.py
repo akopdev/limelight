@@ -3,7 +3,7 @@ import re
 import pytest
 from aioresponses import aioresponses
 
-from limelight.skills import Weather
+from limelight.extensions import Weather
 
 
 @pytest.mark.asyncio()

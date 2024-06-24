@@ -15,7 +15,7 @@ class SearchResultDocument(BaseModel):
     description: str
 
 
-class SearchResultSkill(BaseModel):
+class SearchResultExtension(BaseModel):
     name: str
     results: Optional[Any]
 
@@ -24,4 +24,4 @@ class SearchResults(BaseModel):
     id: str
     query: str
     documents: Optional[List[SearchResultDocument]] = []
-    skills: Optional[List[SearchResultSkill]] = []
+    extensions: Optional[List[SearchResultExtension]] = []

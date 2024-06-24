@@ -5,7 +5,7 @@ import aiohttp
 from pydantic import BaseModel
 
 from ..logger import log
-from .base import BaseSkill
+from .base import BaseExtension
 
 
 class Unit(str, Enum):
@@ -34,10 +34,9 @@ class WeatherGeocoding(BaseModel):
     longitude: float
 
 
-class Weather(BaseSkill):
+class Weather(BaseExtension):
     locations: Dict[str, WeatherGeocoding] = {}
 
-    __name__ = "weather"
     __keywords__ = [
         "snow",
         "snowfall",
@@ -89,10 +88,14 @@ class Weather(BaseSkill):
                     self.locations[city] = WeatherGeocoding(**data.get("results", [{}])[0])
         return self.locations[city]
 
-    async def run(
-        self, city: Optional[str] = "Amsterdam", unit: Optional[Unit] = Unit.celsius
-    ) -> Optional[WeatherForecast]:
+    async def run(self, **kwargs) -> Optional[WeatherForecast]:
         """Get the current weather forecast for the user's location."""
+
+        # TODO: extract the city from the query
+        city: Optional[str] = "Amsterdam"
+        # TODO: extract the unit from the app settings
+        unit: Optional[Unit] = Unit.celsius
+
         if location := await self.get_location(city):
             async with aiohttp.ClientSession() as session:
                 async with session.get(

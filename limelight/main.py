@@ -3,9 +3,9 @@ from typing import List
 from fastapi import Depends, FastAPI, HTTPException
 from starlette.responses import FileResponse
 
+from .extensions import Weather
 from .models import Document, Query
-from .schemas import SearchResultDocument, SearchResults, SearchResultSkill
-from .skills import Weather
+from .schemas import SearchResultDocument, SearchResultExtension, SearchResults
 
 app = FastAPI()
 
@@ -24,28 +24,10 @@ async def search(q: str):
 
     # Based on user search request type, we will determine the best approach to handle the request
     # For example, if the user is searching for weather-related information, we will call
-    # the weather skill instead of querying the database. If user is exploring a topic, we will
+    # the weather extension instead of querying the database. If user is exploring a topic, we will
     # try to collect as much information as possible from the database and summarize it for the
     # easy consumption of the user. For simple keyword-based search, we will query the database and
     # return the results as fast as possible.
-
-    skills = [Weather]
-
-    # Check if any skill is enabled
-    skills_results: List[SearchResultSkill] = []
-    for skill in skills:
-        s = skill(query.text)
-        if s.enabled:
-            print("Running skill:", s.name)
-            skills_results.append(SearchResultSkill(name=s.name, results=await s.run()))
-
-    # If any skill results are found, return them without querying the database
-    if skills_results:
-        return SearchResults(
-            id=query.id,
-            query=query.text,
-            skills=skills_results,
-        )
 
     # Search result candidates in the database
     documents = Document.search(query.text, query.keywords)
@@ -54,6 +36,18 @@ async def search(q: str):
     #     query.summarise(documents[:3])
     #     query.save()
 
+    available_extensions = [Weather]
+
+    # This is a runtime execution of the extensions. We can run them in background tasks
+    # to speed up the response time.
+    extensions: List[SearchResultExtension] = []
+    for extension in available_extensions:
+        ext = extension(query.text)
+        if ext.enabled:
+            extensions.append(
+                SearchResultExtension(name=ext.name, results=await ext.run(documents=documents))
+            )
+
     return SearchResults(
         id=query.id,
         query=query.text,
@@ -61,6 +55,7 @@ async def search(q: str):
             SearchResultDocument(url=doc.url, title=doc.title, description=doc.text)
             for doc in documents
         ],
+        extensions=extensions,
     )
 
 

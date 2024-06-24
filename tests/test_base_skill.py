@@ -1,10 +1,9 @@
-from limelight.skills.base import BaseSkill
+from limelight.extensions.base import BaseExtension
 
 
-def test_skill_detection():
+def test_extension_detection():
 
-    class Animal(BaseSkill):
-        __name__ = "animal"
+    class Animal(BaseExtension):
         __keywords__ = ["dog", "cat", "bird"]
 
     assert Animal("Brown fox jumps over the lazy dog").enabled is True

@@ -1,8 +1,11 @@
 from abc import ABC
+from typing import List, Optional
+
+from limelight.models import Document
 
 
-class BaseSkill(ABC):
-    """Base class for all skills."""
+class BaseExtension(ABC):
+    """Base class for all extensions."""
 
     def __init__(self, query: str):
         self.query = query
@@ -10,28 +13,28 @@ class BaseSkill(ABC):
     @property
     def name(self) -> str:
         """
-        Get the name of the skill.
+        Get the name of the extension.
 
         Returns:
         -------
-            str: Name of the skill.
+            str: Name of the extension.
         """
 
-        return self.__name__ or "unknown"
+        return self.__class__.__name__.lower()
 
     @property
     def enabled(self) -> bool:
         """
-        Check if the skill is applicable for the given query.
+        Check if the extension is applicable for the given query.
 
         Returns:
         -------
-            bool: True if the skill is applicable.
+            bool: True if the extension is applicable.
         """
 
         query = "".join(e for e in self.query if e.isalnum() or e.isspace()).lower()
         keywords = list(set(query.split()))
         return any(keyword in keywords for keyword in self.__keywords__)
 
-    def run(self):
+    def run(self, documents: Optional[List[Document]] = []):
         raise NotImplementedError
