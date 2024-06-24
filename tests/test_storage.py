@@ -6,9 +6,9 @@ import pytest
 from limelight.storage import Collection
 
 
-@pytest.fixture(autouse=True, scope="function")
-def setup(mocker):
-    client = chromadb.Client()
+@pytest.fixture(autouse=True)
+def _setup(mocker):
+    client = chromadb.Client(settings=chromadb.Settings(allow_reset=True))
     client.reset()
     collection = client.get_or_create_collection(name="test_collection")
     mocker.patch("limelight.storage.collection.client", return_value=client)

@@ -14,22 +14,47 @@
   <div id="app">
     <div class="navbar navbar-dark bg-dark">
       <div class="container">
-        <a class="navbar-brand" href="#">Limelight</a>
-        <form @submit.prevent="search = $event.target.search.value">
-          <input type="text" :disabled="loading" class="form-control" id="search" placeholder="Search">
+        <a class="navbar-brand" href="/">Limelight</a>
+        <form @submit.prevent="search = $event.target.search.value" class="col-md-10 col-sm-9">
+          <input type="text" :disabled="loading" class="form-control" id="search" autofocus placeholder="Search">
         </form>
       </div>
     </div>
     <div class="container">
       <div class="row">
         <div class="col-md-12">
-          <span id="loading" v-if="loading">Loading...</span>
-          <div id="result">
+          <div class="px-4 pt-5 my-5 text-center" id="loading" v-if="loading">
+            <div class="col-lg-6 mx-auto">
+              <p class="lead mb-4">Loading ...</p>
+            </div>
+          </div>
+
+          <div class="px-4 pt-5 my-5 text-center" id="message" v-if="message">
+            <h1 class="display-4 fw-bold text-body-emphasis">An error occurred!</h1>
+            <div class="col-lg-6 mx-auto">
+              <p class="lead mb-4">{{message}}</p>
+            </div>
+          </div>
+
+          <div id="result" v-if="!loading">
+            <div class="my-3 p-3 bg-body rounded shadow-sm" v-for="skill in skills">
+              <h2>{{ skill.name }}</h2>
+              {{ skill.results }}}
+            </div>
+
             <div class="my-3 p-3 bg-body rounded shadow-sm" v-for="item in items">
               <h2><a :href="item.url">{{ item.title }}</a></h2>
               <p>{{ item.description }}</p>
             </div>
           </div>
+
+          <div class="px-4 pt-5 my-5 text-center" id="no-results" v-if="!loading && !items.length && !skills.length && !message && touch">
+            <h1 class="display-4 fw-bold text-body-emphasis">No results found!</h1>
+            <div class="col-lg-6 mx-auto">
+              <p class="lead mb-4">Try searching for something else.</p>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -39,21 +64,29 @@
       new Vue({
         el: '#app',
         data: {
+          touch: false,
           loading: false,
+          message: '',
           search: '',
-          items: []
+          items: [],
+          skills: []
         },
         watch: {
           search: function () {
             this.loading = true
+            this.touch = true
+            this.message = ''
             axios.get('/search?q=' + this.search)
               .then(response => {
-                this.items = response.data.results
+                this.items = response.data.documents
+                this.skills = response.data.skills
                 this.loading = false
               })
               .catch(error => {
                 console.log(error)
+                this.message = error
                 this.loading = false
+
               })
           }
         }

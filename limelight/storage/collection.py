@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 from uuid import uuid4
 
 import chromadb
@@ -77,7 +77,9 @@ class Collection:
             )
 
     @classmethod
-    def search(cls, text: str, filter: List[str], limit: int = 10) -> List["Collection"]:
+    def search(
+        cls, text: str, filter: Optional[List[str]] = [], limit: int = 10
+    ) -> List["Collection"]:
         extra = {
             "n_results": limit,
         }

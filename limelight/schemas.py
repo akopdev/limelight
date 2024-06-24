@@ -1,5 +1,5 @@
 # Description: Schemas for data validation
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from pydantic import BaseModel
 
@@ -9,13 +9,19 @@ class QueryMetadata(BaseModel):
     keywords: List[str]
 
 
-class SearchResultItem(BaseModel):
+class SearchResultDocument(BaseModel):
     url: str
     title: str
     description: str
 
 
+class SearchResultSkill(BaseModel):
+    name: str
+    results: Optional[Any]
+
+
 class SearchResults(BaseModel):
     id: str
     query: str
-    results: Optional[List[SearchResultItem]]
+    documents: Optional[List[SearchResultDocument]] = []
+    skills: Optional[List[SearchResultSkill]] = []

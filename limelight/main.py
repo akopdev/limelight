@@ -1,8 +1,10 @@
+from typing import List
+
 from fastapi import Depends, FastAPI, HTTPException
 from starlette.responses import FileResponse
 
 from .models import Document, Query
-from .schemas import SearchResultItem, SearchResults
+from .schemas import SearchResultDocument, SearchResults, SearchResultSkill
 from .skills import Weather
 
 app = FastAPI()
@@ -16,62 +18,47 @@ async def index():
 @app.get("/search")
 async def search(q: str):
     query = Query.parse_text(q)
+    if not query:
+        raise HTTPException(status_code=400, detail="Error processing query")
     # id = query.save()
 
-    weather_related_keywords = [
-        "snow",
-        "snowfall",
-        "rain",
-        "raining",
-        "rainfall",
-        "showers",
-        "wind",
-        "windy",
-        "temperature",
-        "heatwave",
-        "cold",
-        "weather",
-        "forecast",
-        "climate",
-        "humidity",
-        "uv index",
-        "storm",
-        "hurricane",
-        "tornado",
-        "barometric pressure",
-        "outdoor",
-        "sunrise",
-        "sunset",
-        "air quality",
-        "heat",
-        "meteorological",
-        "rainy",
-        "accumulation",
-        "precipitation",
-        "thunderstorm",
-        "fog",
-        "cloudy",
-        "overcast",
-        "sunny",
-    ]
+    # Based on user search request type, we will determine the best approach to handle the request
+    # For example, if the user is searching for weather-related information, we will call
+    # the weather skill instead of querying the database. If user is exploring a topic, we will
+    # try to collect as much information as possible from the database and summarize it for the
+    # easy consumption of the user. For simple keyword-based search, we will query the database and
+    # return the results as fast as possible.
 
-    # Check if we need to call query
-    if query.keywords and any(keyword in query.keywords for keyword in weather_related_keywords):
-        # Call the weather skill with the query
-        result = await Weather().forecast()
-        return result
+    skills = [Weather]
+
+    # Check if any skill is enabled
+    skills_results: List[SearchResultSkill] = []
+    for skill in skills:
+        s = skill(query.text)
+        if s.enabled:
+            print("Running skill:", s.name)
+            skills_results.append(SearchResultSkill(name=s.name, results=await s.run()))
+
+    # If any skill results are found, return them without querying the database
+    if skills_results:
+        return SearchResults(
+            id=query.id,
+            query=query.text,
+            skills=skills_results,
+        )
 
     # Search result candidates in the database
     documents = Document.search(query.text, query.keywords)
     # if documents:
     #     # Generate a human-readable response
     #     query.summarise(documents[:3])
+    #     query.save()
 
     return SearchResults(
         id=query.id,
         query=query.text,
-        results=[
-            SearchResultItem(url=doc.url, title=doc.title, description=doc.text)
+        documents=[
+            SearchResultDocument(url=doc.url, title=doc.title, description=doc.text)
             for doc in documents
         ],
     )
