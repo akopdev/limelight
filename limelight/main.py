@@ -3,7 +3,7 @@ from typing import List
 from fastapi import Depends, FastAPI, HTTPException
 from starlette.responses import FileResponse
 
-from .extensions import Weather
+from .extensions import Weather, Summary
 from .models import Document, Query
 from .schemas import SearchResultDocument, SearchResultExtension, SearchResults
 
@@ -31,12 +31,8 @@ async def search(q: str):
 
     # Search result candidates in the database
     documents = Document.search(query.text, query.keywords)
-    # if documents:
-    #     # Generate a human-readable response
-    #     query.summarise(documents[:3])
-    #     query.save()
 
-    available_extensions = [Weather]
+    available_extensions = [Weather, Summary]
 
     # This is a runtime execution of the extensions. We can run them in background tasks
     # to speed up the response time.
