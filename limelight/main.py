@@ -30,7 +30,7 @@ async def search(q: str):
     # return the results as fast as possible.
 
     # Search result candidates in the database
-    documents = Document.search(query.text, query.keywords)
+    documents = Document.search(query.text)
 
     available_extensions = [Weather, Summary]
 

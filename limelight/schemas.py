@@ -4,11 +4,6 @@ from typing import Any, List, Optional
 from pydantic import BaseModel
 
 
-class QueryMetadata(BaseModel):
-    query: str
-    keywords: List[str]
-
-
 class SearchResultDocument(BaseModel):
     url: str
     title: str

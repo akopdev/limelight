@@ -26,7 +26,7 @@ class Summary(BaseExtension):
         # TODO: for now keep summary enabled for all queries
         #       but later we can add some logic to enable it
         #       only for specific queries
-        return True
+        return False
 
     async def run(self, documents):
         con = "\n".join([doc.text for doc in documents[:self.k_top]])

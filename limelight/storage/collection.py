@@ -77,12 +77,12 @@ class Collection:
             )
 
     @classmethod
-    def search(
-        cls, text: str, filter: Optional[List[str]] = [], limit: int = 10
-    ) -> List["Collection"]:
+    def search(cls, text: str, limit: int = 10) -> List["Collection"]:
         extra = {
             "n_results": limit,
         }
+        # TODO: replace with a proper text parser
+        filter = text.split()
         if filter:
             if len(filter) == 1:
                 extra["where_document"] = {"$contains": filter[0]}
