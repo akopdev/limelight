@@ -76,27 +76,5 @@ class Collection:
                 **cls._unserialize_metadata(items["metadatas"][0])
             )
 
-    @classmethod
-    def search(cls, text: str, limit: int = 10) -> List["Collection"]:
-        extra = {
-            "n_results": limit,
-        }
-        # TODO: replace with a proper text parser
-        filter = text.split()
-        if filter:
-            if len(filter) == 1:
-                extra["where_document"] = {"$contains": filter[0]}
-            else:
-                extra["where_document"] = {"$or": [{"$contains": f} for f in filter]}
-        items = cls.storage().query(query_texts=[text], **extra)
-        return [
-            cls(
-                id=items["ids"][0][i],
-                text=text,
-                **cls._unserialize_metadata(items["metadatas"][0][i])
-            )
-            for i, text in enumerate(items["documents"][0])
-        ]
-
     def __str__(self) -> str:
         return self.text

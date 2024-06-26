@@ -20,26 +20,29 @@ class Query(Collection):
     __collection_name__ = "queries"
 
     input: str = ""
+    keywords: List[str] = []
 
     @classmethod
-    def parse_text(cls, text) -> "Query":
+    def parse_text(cls, input: str) -> "Query":
         """
         Parse the user query, correct grammar and extract keywords.
 
         Parameters:
         ----------
-            text (str): User query text.
+            input (str): User query text.
 
         Returns:
         -------
             Query: Query object with keywords and corrected text.
         """
         try:
-            result = ollama.generate(model=settings.grammar_model, prompt=text, stream=False)
-            return cls(text=result.get("response", text), input=text)
+            result = ollama.generate(model=settings.grammar_model, prompt=input, stream=False)
+            text = result.get("response", input)
+            # TODO: Extract keywords from the text
+            keywords = text.split()
+            return cls(text=text, input=text, keywords=keywords)
         except Exception as e:
             log.error(e)
-            return
 
 
 class Document(Collection):
@@ -48,3 +51,23 @@ class Document(Collection):
     title: str = ""
     categories: List[str] = []
     url: str = ""
+
+    @classmethod
+    def search(cls, query: Query, limit: int = 10) -> List["Collection"]:
+        extra = {
+            "n_results": limit,
+        }
+        if query.keywords:
+            if len(query.keywords) == 1:
+                extra["where_document"] = {"$contains": query.keywords[0]}
+            else:
+                extra["where_document"] = {"$or": [{"$contains": f} for f in query.keywords]}
+        items = cls.storage().query(query_texts=[query.text], **extra)
+        return [
+            cls(
+                id=items["ids"][0][i],
+                text=text,
+                **cls._unserialize_metadata(items["metadatas"][0][i])
+            )
+            for i, text in enumerate(items["documents"][0])
+        ]

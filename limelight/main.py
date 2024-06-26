@@ -30,7 +30,7 @@ async def search(q: str):
     # return the results as fast as possible.
 
     # Search result candidates in the database
-    documents = Document.search(query.text)
+    documents = Document.search(query)
 
     available_extensions = [Weather, Summary]
 
@@ -38,7 +38,7 @@ async def search(q: str):
     # to speed up the response time.
     extensions: List[SearchResultExtension] = []
     for extension in available_extensions:
-        ext = extension(query.text)
+        ext = extension(query)
         if ext.enabled:
             extensions.append(
                 SearchResultExtension(name=ext.name, results=await ext.run(documents=documents))
@@ -53,11 +53,3 @@ async def search(q: str):
         ],
         extensions=extensions,
     )
-
-
-@app.get("/weather")
-async def weather(weather: Weather = Depends(Weather)):
-    result = await weather.forecast()
-    if not result:
-        raise HTTPException(status_code=404, detail="Error fetching weather data")
-    return result

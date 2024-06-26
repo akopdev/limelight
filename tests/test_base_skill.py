@@ -1,10 +1,13 @@
 from limelight.extensions.base import BaseExtension
+from limelight.models import Query
 
 
 def test_extension_detection():
-
     class Animal(BaseExtension):
         __keywords__ = ["dog", "cat", "bird"]
 
-    assert Animal("Brown fox jumps over the lazy dog").enabled is True
-    assert Animal("Brown fox is sleeping").enabled is False
+    q1 = Query(text="Brown fox jumps over the lazy dog", keywords=["brown", "fox", "lazy", "dog"])
+    q2 = Query(text="Brown fox is sleeping", keywords=["brown", "fox", "sleeping"])
+
+    assert Animal(q1).enabled is True
+    assert Animal(q2).enabled is False

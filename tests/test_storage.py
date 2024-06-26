@@ -3,6 +3,7 @@ from typing import Dict, List
 import chromadb
 import pytest
 
+from limelight.models import Document, Query
 from limelight.storage import Collection
 
 
@@ -15,7 +16,7 @@ def _setup(mocker):
     mocker.patch.object(Collection, "storage", return_value=collection)
 
 
-class TestCollection(Collection):
+class TestCollection(Document):
     __collection_name__ = "test_collection"
 
     list_attr: List[str] = []
@@ -61,7 +62,7 @@ def test_collection_get():
 
 def test_collection_search(mocker):
     TestCollection(text="It's a test query.").save()
-    results = TestCollection.search("test")
+    results = TestCollection.search(Query(text="It's a test query."))
 
     assert len(results) == 1
     assert results[0].text == "It's a test query."

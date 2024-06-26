@@ -1,13 +1,13 @@
 from abc import ABC
 from typing import List, Optional
 
-from limelight.models import Document
+from ..models import Document, Query
 
 
 class BaseExtension(ABC):
     """Base class for all extensions."""
 
-    def __init__(self, query: str):
+    def __init__(self, query: Query):
         self.query = query
 
     @property
@@ -31,10 +31,7 @@ class BaseExtension(ABC):
         -------
             bool: True if the extension is applicable.
         """
-
-        query = "".join(e for e in self.query if e.isalnum() or e.isspace()).lower()
-        keywords = list(set(query.split()))
-        return any(keyword in keywords for keyword in self.__keywords__)
+        return any(keyword in self.query.keywords for keyword in self.__keywords__)
 
     def run(self, documents: Optional[List[Document]] = []):
         raise NotImplementedError
