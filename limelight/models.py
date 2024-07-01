@@ -11,7 +11,7 @@ class Query(Collection):
     """
     Query model to store user queries.
 
-    Attributes:
+    Attributes
     ----------
         input (str): Original query text.
         text (str): Corrected query text.
@@ -27,11 +27,11 @@ class Query(Collection):
         """
         Parse the user query, correct grammar and extract keywords.
 
-        Parameters:
+        Parameters
         ----------
             input (str): User query text.
 
-        Returns:
+        Returns
         -------
             Query: Query object with keywords and corrected text.
         """
@@ -67,7 +67,36 @@ class Document(Collection):
             cls(
                 id=items["ids"][0][i],
                 text=text,
-                **cls._unserialize_metadata(items["metadatas"][0][i])
+                **cls._unserialize_metadata(items["metadatas"][0][i]),
             )
             for i, text in enumerate(items["documents"][0])
         ]
+
+
+class Summary(Collection):
+    __collection_name__ = "summaries"
+
+    documents: List[str] = []
+    query: str = ""
+
+    def generate(self) -> str:
+        con = "\n".join([Document.get(doc).text for doc in self.documents])
+        prompt = f"""
+        You are an intelligent search engine. You will be provided with some retrieved context,
+        as well as the users query. Your job is to understand the request, and answer based on
+        the retrieved context, without adding any new information.
+        Try to be as concise and short as possible.
+        Here is the retrieved context:
+        {con}
+
+        Here is the users query:
+        {self.query}
+        """
+
+        try:
+            resp = ollama.generate(model=settings.language_model, prompt=prompt, stream=False)
+            self.text = resp.get("response", "")
+            self.save()
+        except Exception as e:
+            log.error(e)
+            return

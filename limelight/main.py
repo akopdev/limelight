@@ -1,11 +1,10 @@
-from typing import List
-
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 from starlette.responses import FileResponse
 
-from .extensions import Weather, Summary
-from .models import Document, Query
-from .schemas import SearchResultDocument, SearchResultExtension, SearchResults
+from .extensions import Weather
+from .models import Document, Query, Summary
+from .schemas import (SearchResultDocument, SearchResultExtension,
+                      SearchResults, SearchSummary)
 
 app = FastAPI()
 
@@ -16,7 +15,7 @@ async def index():
 
 
 @app.get("/search")
-async def search(q: str):
+async def search(q: str, background_tasks: BackgroundTasks):
     query = Query.parse_text(q)
     if not query:
         raise HTTPException(status_code=400, detail="Error processing query")
@@ -30,26 +29,51 @@ async def search(q: str):
     # return the results as fast as possible.
 
     # Search result candidates in the database
+
+    weather = Weather(query)
+    if weather.enabled:
+        if weather_results := await weather.search():
+            return SearchResults(
+                id=query.id,
+                query=query.text,
+                extensions=[SearchResultExtension(name=weather.name, results=weather_results)],
+            )
+
     documents = Document.search(query)
 
-    available_extensions = [Weather, Summary]
+    summary = Summary(query=query.text, documents=[doc.id for doc in documents[:3]])
+    summary.save()
 
-    # This is a runtime execution of the extensions. We can run them in background tasks
-    # to speed up the response time.
-    extensions: List[SearchResultExtension] = []
-    for extension in available_extensions:
-        ext = extension(query)
-        if ext.enabled:
-            extensions.append(
-                SearchResultExtension(name=ext.name, results=await ext.run(documents=documents))
-            )
+    background_tasks.add_task(summary.generate)
 
     return SearchResults(
         id=query.id,
         query=query.text,
         documents=[
             SearchResultDocument(url=doc.url, title=doc.title, description=doc.text)
+            for doc in documents[3:]
+        ],
+        summary=SearchSummary(
+            id=summary.id,
+            documents=[
+                SearchResultDocument(url=doc.url, title=doc.title, description=doc.text)
+                for doc in documents[:3]
+            ],
+        ),
+    )
+
+
+@app.get("/summary/{id}")
+async def get_summary(id: str):
+    summary = Summary.get(id)
+    if not summary:
+        raise HTTPException(status_code=404, detail="Summary not found")
+    documents = [Document.get(doc) for doc in summary.documents]
+    return SearchSummary(
+        id=summary.id,
+        text=summary.text,
+        documents=[
+            SearchResultDocument(url=doc.url, title=doc.title, description=doc.text)
             for doc in documents
         ],
-        extensions=extensions,
     )

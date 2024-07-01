@@ -88,9 +88,8 @@ class Weather(BaseExtension):
                     self.locations[city] = WeatherGeocoding(**data.get("results", [{}])[0])
         return self.locations[city]
 
-    async def run(self, **kwargs) -> Optional[WeatherForecast]:
+    async def search(self) -> Optional[WeatherForecast]:
         """Get the current weather forecast for the user's location."""
-
         # TODO: extract the city from the query
         city: Optional[str] = "Amsterdam"
         # TODO: extract the unit from the app settings

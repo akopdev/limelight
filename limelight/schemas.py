@@ -15,8 +15,15 @@ class SearchResultExtension(BaseModel):
     results: Optional[Any]
 
 
+class SearchSummary(BaseModel):
+    id: str
+    text: Optional[str] = ""
+    documents: List[SearchResultDocument]
+
+
 class SearchResults(BaseModel):
     id: str
     query: str
     documents: Optional[List[SearchResultDocument]] = []
+    summary: Optional[SearchSummary] = None
     extensions: Optional[List[SearchResultExtension]] = []

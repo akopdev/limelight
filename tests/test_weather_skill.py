@@ -34,7 +34,7 @@ async def test_weather_forecast():
             payload={"current": {"temperature_2m": 10.0, "wind_speed_10m": 6.0}},
         )
         weather = Weather("What is the weather in Amsterdam?")
-        result = await weather.run()
+        result = await weather.search()
         assert result
         assert result.temperature == 10.0
         assert result.wind == 6.0
