@@ -8,7 +8,7 @@ The code, as well as the documentation, are still in the early stages of develop
 
 ## Installation
 
-First, you will need to install (ollama)[https://ollama.com], and manually start the service. 
+First, you will need to install [ollama](https://ollama.com), and manually start the service. 
 Then, you can install the application virtual environment with it's dependencies by executing the following command:
 
 ```shell
